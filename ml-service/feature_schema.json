@@ -1,0 +1,9 @@
+{
+  "features": [
+    "age",
+    "sex",
+    "blood_pressure",
+    "cholesterol"
+  ]
+}
+
