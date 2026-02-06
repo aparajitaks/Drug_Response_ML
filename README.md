@@ -28,14 +28,14 @@ The goal is to predict whether a patient is a **Responder / Non-Responder** (or 
 
 ## 🎯 Features
 
-✅ Upload CSV dataset from sidebar
-✅ Displays dataset preview
-✅ Automatically selects required features using schema file
-✅ Predicts drug response category
-✅ Generates confidence scores (if model supports `predict_proba`)
-✅ Interactive analytics visualizations (Plotly)
-✅ Shows most confident predictions
-✅ Download prediction results as CSV
+-> Upload CSV dataset from sidebar
+-> Displays dataset preview
+-> Automatically selects required features using schema file
+-> Predicts drug response category
+-> Generates confidence scores (if model supports `predict_proba`)
+-> Interactive analytics visualizations (Plotly)
+-> Shows most confident predictions
+-> Download prediction results as CSV
 
 ---
 
@@ -114,9 +114,9 @@ Example output:
 
 The dashboard also shows:
 
-📌 Prediction Distribution Chart
-📌 Confidence Score Distribution Histogram
-📌 Top 10 Most Confident Predictions Table
+-> Prediction Distribution Chart
+-> Confidence Score Distribution Histogram
+-> Top 10 Most Confident Predictions Table
 
 ---
 
