@@ -7,9 +7,12 @@ import plotly.express as px
 
 st.set_page_config(page_title="Drug Response ML Dashboard", layout="wide")
 
-MODEL_PATH = "models/drug_response_model.pkl"
-LABEL_PATH = "label_mapping.json"
-SCHEMA_PATH = "feature_schema.json"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+MODEL_PATH = os.path.join(BASE_DIR, "models", "drug_response_model.pkl")
+LABEL_PATH = os.path.join(BASE_DIR, "label_mapping.json")
+SCHEMA_PATH = os.path.join(BASE_DIR, "feature_schema.json")
+
 
 @st.cache_resource
 def load_model():
