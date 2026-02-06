@@ -7,7 +7,7 @@ import plotly.express as px
 
 st.set_page_config(page_title="Drug Response ML Dashboard", layout="wide")
 
-MODEL_PATH = "models/model.pkl"   
+MODEL_PATH = "models/drug_response_model.pkl"
 LABEL_PATH = "label_mapping.json"
 SCHEMA_PATH = "feature_schema.json"
 

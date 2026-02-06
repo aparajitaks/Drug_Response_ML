@@ -1,9 +1,3 @@
 {
-  "features": [
-    "age",
-    "sex",
-    "blood_pressure",
-    "cholesterol"
-  ]
+  "features": ["drugName", "condition", "rating", "usefulCount"]
 }
-
