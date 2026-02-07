@@ -122,7 +122,7 @@ You can also download and use it directly from the dashboard sidebar.
 
 VS Code Interpreter Setup (Important)
 
-```If VS Code shows errors like:
+If VS Code shows errors like:
 
 Import "streamlit" could not be resolved
 
@@ -134,7 +134,7 @@ It means VS Code is not using the correct virtual environment interpreter.
 
 Fix Interpreter in VS Code
 
-Open VS Code
+```Open VS Code
 
 Press:
 
