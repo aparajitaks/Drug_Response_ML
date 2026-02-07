@@ -1,206 +1,185 @@
-# 🧠 Drug Response ML Dashboard
+# Drug Response ML Dashboard
 
-🚀 A complete **Machine Learning + Streamlit Dashboard** that predicts **drug response categories** using a trained ML model and provides interactive analytics & downloadable prediction results.
+A complete Machine Learning + Streamlit Dashboard that predicts drug response categories using a trained ML model and provides interactive analytics and downloadable prediction results.
 
 This project allows users to upload a dataset CSV file and instantly get predictions along with confidence scores, charts, and insights.
 
 ---
 
-## 📌 Project Overview
+## Project Overview
 
-The **Drug Response ML Dashboard** is an end-to-end ML project built with:
+The Drug Response ML Dashboard is an end-to-end ML project built using:
 
-* **Scikit-Learn model**
-* **Streamlit UI**
-* **Plotly analytics charts**
-* **CSV upload + downloadable output**
+- Scikit-Learn model
+- Streamlit dashboard
+- Plotly charts for analytics
+- CSV upload and downloadable output
+- JSON-based feature schema and label mapping
 
-The goal is to predict whether a patient is a **Responder / Non-Responder** (or response category label) based on drug review-related features.
-
----
-
-## 🚀 Live Demo
-
-🔗 **Hosted App:**
-👉 [https://drugresponseml.streamlit.app](https://drugresponseml.streamlit.app)
+The goal is to predict whether a patient is a Responder / Non-Responder (or response category label) based on dataset features.
 
 ---
 
-## 🎯 Features
+## Live Demo
 
--> Upload CSV dataset from sidebar
--> Displays dataset preview
--> Automatically selects required features using schema file
--> Predicts drug response category
--> Generates confidence scores (if model supports `predict_proba`)
--> Interactive analytics visualizations (Plotly)
--> Shows most confident predictions
--> Download prediction results as CSV
+Hosted App Link:  
+https://drugresponseml.streamlit.app
 
 ---
 
-## 🛠️ Tech Stack
+## Features
 
-* **Python**
-* **Streamlit**
-* **Scikit-Learn**
-* **Pandas**
-* **Joblib**
-* **Plotly**
-* **JSON schema config**
+- Upload CSV dataset from sidebar
+- Dataset preview display
+- Automatic feature selection using schema file
+- Drug response category prediction
+- Confidence scores (if model supports predict_proba)
+- Interactive analytics visualizations (Plotly)
+- Top most confident predictions table
+- Download prediction results as CSV
+- Demo dataset support (Download Sample CSV / Use Demo Dataset)
 
 ---
 
-## 📂 Project Structure
+## Tech Stack
 
-```
+- Python
+- Streamlit
+- Scikit-Learn
+- Pandas
+- NumPy
+- Joblib
+- Plotly
+- FastAPI (optional backend support)
+
+---
+
+## Project Structure
+
+```bash
 Drug_Response_ML/
 │
 ├── ml-service/
-│   ├── dashboard.py                # Streamlit dashboard
-│   ├── app.py                      # Backend / ML service script (if used)
-│   ├── requirements.txt            # Required dependencies
-│   ├── feature_schema.json         # Feature schema file
-│   ├── label_mapping.json          # Mapping from numeric labels to text labels
+│   ├── dashboard.py
+│   ├── app.py
+│   ├── requirements.txt
+│   ├── feature_schema.json
+│   ├── label_mapping.json
+│   ├── data/
+│   │   └── sample_patient_data.csv
 │   ├── models/
-│   │   └── drug_response_model.pkl # Trained ML model
-│   └── .gitignore
+│   │   └── drug_response_model.pkl
+│   └── venv/ (local only, not pushed to GitHub)
 │
 └── README.md
 ```
 
----
-
-## 📊 Input CSV Format
-
-The uploaded CSV must contain the following required columns (as defined in `feature_schema.json`):
-
-Example schema:
-
-```json
-{
-  "features": ["drugName", "condition", "rating", "usefulCount"]
-}
+How to Run Locally (Step-by-Step):
 ```
-
-So your CSV should include:
-
-| Column Name | Description           |
-| ----------- | --------------------- |
-| drugName    | Name of the drug      |
-| condition   | Medical condition     |
-| rating      | Patient rating        |
-| usefulCount | Count of useful votes |
-
----
-
-## 🧠 Model Output
-
-After prediction, the dashboard generates:
-
-* `Prediction` (numeric label)
-* `Confidence` (max probability score)
-* `Prediction_Label` (human readable label)
-
-Example output:
-
-| Prediction | Confidence | Prediction_Label |
-| ---------- | ---------- | ---------------- |
-| 2          | 0.91       | Responder        |
-
----
-
-## 📈 Analytics Provided
-
-The dashboard also shows:
-
--> Prediction Distribution Chart
--> Confidence Score Distribution Histogram
--> Top 10 Most Confident Predictions Table
-
----
-
-## ⚙️ How to Run Locally
-
-### 1️⃣ Clone Repository
-
-```bash
+Step 1: Clone Repository
 git clone https://github.com/aparajitaks/Drug_Response_ML.git
-cd Drug_Response_ML/ml-service
-```
 
-### 2️⃣ Create Virtual Environment
+Step 2: Enter the Project Folder
+cd Drug_Response_ML
 
-```bash
+Step 3: Go to ML Service Folder
+cd ml-service
+
+Step 4: Create Virtual Environment
 python3 -m venv venv
+
+Step 5: Activate Virtual Environment
+
+
+For Mac/Linux:
+
 source venv/bin/activate
-```
 
-### 3️⃣ Install Dependencies
 
-```bash
+For Windows (PowerShell):
+
+venv\Scripts\activate 
+
+Step 6: Install Dependencies
 pip install -r requirements.txt
-```
 
-### 4️⃣ Run Streamlit App
-
-```bash
-streamlit run dashboard.py
+Step 7: Run Streamlit Dashboard
+python -m streamlit run dashboard.py
 ```
 
 Now open in browser:
 
-👉 [http://localhost:8501](http://localhost:8501)
+http://localhost:8501
 
----
+```Demo Dataset
 
-## 🌐 Deployment (Streamlit Cloud)
+A sample CSV is included inside:
 
-This project is deployed using **Streamlit Cloud**.
+ml-service/data/sample_patient_data.csv
+```
 
-To deploy:
+You can also download and use it directly from the dashboard sidebar.
 
-1. Push code to GitHub
-2. Connect repo on Streamlit Cloud
-3. Select file path:
+VS Code Interpreter Setup (Important)
 
-   ```
-   ml-service/dashboard.py
-   ```
-4. Add requirements.txt automatically
+```If VS Code shows errors like:
 
----
+Import "streamlit" could not be resolved
 
-## 📌 Note About Dataset
+Import "pandas" could not be resolved
 
-The dataset used for training/testing is large, so it is not uploaded directly to GitHub.
+Import "fastapi" could not be resolved
 
-Users can upload their own CSV file in the required format.
+It means VS Code is not using the correct virtual environment interpreter.
 
----
+Fix Interpreter in VS Code
 
-## 🔥 Future Improvements
+Open VS Code
 
-🚀 Add model retraining option
-🚀 Add SHAP explainability visualizations
-🚀 Improve preprocessing pipeline for text review analysis
-🚀 Add feature importance chart
-🚀 Add support for multiple ML models
+Press:
 
----
+Mac:
 
-## 👩‍💻 Author
+Cmd + Shift + P
 
-**Aparajita K. Singh**
-BTech CSE (AI & ML) | Newton School of Technology
 
-🔗 GitHub: [https://github.com/aparajitaks](https://github.com/aparajitaks)
+Windows/Linux:
 
----
+Ctrl + Shift + P
 
-## ⭐ If you like this project
 
-Give it a ⭐ on GitHub — it motivates me a lot! 🚀🔥
+Search and click:
 
----
+Python: Select Interpreter
 
+
+Select the interpreter:
+
+ml-service/venv/bin/python
+
+
+If it is not visible, click:
+
+Enter interpreter path...
+
+
+Then manually choose:
+
+ml-service/venv/bin/python
+
+Reload VS Code (Recommended)
+
+After selecting interpreter:
+
+Press:
+
+Cmd + Shift + P
+
+
+Search and click:
+
+Developer: Reload Window
+
+
+After this, all missing import warnings will disappear.
+```
