@@ -12,7 +12,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, "models", "drug_response_model.pkl")
 LABEL_PATH = os.path.join(BASE_DIR, "label_mapping.json")
 SCHEMA_PATH = os.path.join(BASE_DIR, "feature_schema.json")
-DEMO_CSV_PATH = os.path.join(BASE_DIR, "data", "sample_patient_data.csv")
+DEMO_CSV_PATH = os.path.join(BASE_DIR, "data", "demo_sample.csv")
 
 @st.cache_resource
 def load_model():
