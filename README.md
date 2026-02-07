@@ -120,7 +120,9 @@ ml-service/data/sample_patient_data.csv
 
 You can also download and use it directly from the dashboard sidebar.
 
-VS Code Interpreter Setup (Important)
+---
+
+## VS Code Interpreter Setup (Important)
 
 If VS Code shows errors like:
 
