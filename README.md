@@ -124,11 +124,11 @@ VS Code Interpreter Setup (Important)
 
 If VS Code shows errors like:
 
-Import "streamlit" could not be resolved
+--> Import "streamlit" could not be resolved
 
-Import "pandas" could not be resolved
+--> Import "pandas" could not be resolved
 
-Import "fastapi" could not be resolved
+--> Import "fastapi" could not be resolved
 
 It means VS Code is not using the correct virtual environment interpreter.
 
@@ -169,17 +169,4 @@ ml-service/venv/bin/python
 
 Reload VS Code (Recommended)
 
-After selecting interpreter:
-
-Press:
-
-Cmd + Shift + P
-
-
-Search and click:
-
-Developer: Reload Window
-
-
-After this, all missing import warnings will disappear.
 ```
