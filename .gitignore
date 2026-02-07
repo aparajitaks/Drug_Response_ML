@@ -16,3 +16,5 @@ ml-service/venv/
 # Node
 node_modules/
 
+data/*.csv
+!data/demo_sample.csv
