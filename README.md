@@ -1,174 +1,155 @@
-# Drug Response ML Dashboard
+# Drug Response ML
 
-A complete Machine Learning + Streamlit Dashboard that predicts drug response categories using a trained ML model and provides interactive analytics and downloadable prediction results.
-
-This project allows users to upload a dataset CSV file and instantly get predictions along with confidence scores, charts, and insights.
+Interactive dashboard and API for predicting drug response categories from patient review data. Upload a CSV, get predictions with confidence scores, explore charts, and download results. Everything is path-safe (uses `pathlib`) so the project keeps working even if you move the folder.
 
 ---
 
-## Project Overview
+## Problem & Goal
 
-The Drug Response ML Dashboard is an end-to-end ML project built using:
-
-- Scikit-Learn model
-- Streamlit dashboard
-- Plotly charts for analytics
-- CSV upload and downloadable output
-- JSON-based feature schema and label mapping
-
-The goal is to predict whether a patient is a Responder / Non-Responder (or response category label) based on dataset features.
+Given basic drug review metadata (drug name, condition, rating, and helpfulness votes), predict the patient's response category (Responder / Non-Responder / Neutral-Mixed). The project ships a trained scikit-learn model, a Streamlit dashboard for analysts, and an optional FastAPI endpoint for programmatic use.
 
 ---
 
-## Live Demo
+## Dataset
 
-Hosted App Link:  
-https://drugresponseml.streamlit.app
+- Demo CSV: `ml-service/data/demo_sample.csv` (also downloadable from the dashboard sidebar). Columns include:
+	- `uniqueID`: row identifier (not used for prediction)
+	- `drugName`: medication name (feature)
+	- `condition`: condition being treated (feature)
+	- `review`: free-text review (not used by the shipped model)
+	- `rating`: numeric user rating 1–10 (feature)
+	- `date`: review date (not used by the shipped model)
+	- `usefulCount`: helpfulness votes (feature)
+	- `response_category`: ground-truth class (0/1/2) for reference
+- Feature schema is explicitly defined in `ml-service/feature_schema.json`:
+	- `features = ["drugName", "condition", "rating", "usefulCount"]`
+- Label mapping in `ml-service/label_mapping.json`:
+	- `0 → Non-Responder`
+	- `1 → Responder`
+	- `2 → Neutral / Mixed Response`
+
+You can swap in your own data as long as these feature columns are present. Extra columns are ignored.
+
+---
+
+## Model
+
+- Stored at `ml-service/models/drug_response_model.pkl` (loaded via `joblib`).
+- Trained scikit-learn classification pipeline that ingests the four schema-defined features.
+- Supports `predict_proba`, enabling confidence scores in the dashboard.
+- Paths are resolved relative to `ml-service` by default, but can be overridden with env vars (`MODEL_PATH`, `LABEL_PATH`, `SCHEMA_PATH`, `DEMO_CSV_PATH`) using absolute or relative paths.
 
 ---
 
 ## Features
 
-- Upload CSV dataset from sidebar
-- Dataset preview display
-- Automatic feature selection using schema file
-- Drug response category prediction
-- Confidence scores (if model supports predict_proba)
-- Interactive analytics visualizations (Plotly)
-- Top most confident predictions table
-- Download prediction results as CSV
-- Demo dataset support (Download Sample CSV / Use Demo Dataset)
+- CSV upload with preview
+- Demo dataset download and one-click load
+- Schema-driven feature selection with missing-column checks
+- Predictions with optional confidence scores
+- Label decoding via JSON mapping
+- Plotly visualizations (prediction distribution, confidence histogram)
+- Top confident cases table
+- Downloadable predictions CSV
+- Optional FastAPI `/predict` endpoint for programmatic inference
 
 ---
 
 ## Tech Stack
 
-- Python
-- Streamlit
-- Scikit-Learn
-- Pandas
-- NumPy
-- Joblib
-- Plotly
-- FastAPI (optional backend support)
+- Python 3.11+
+- Streamlit (dashboard)
+- FastAPI + Uvicorn (API)
+- scikit-learn, pandas, numpy
+- joblib (model serialization)
+- plotly (charts)
+- python-dotenv (env loading)
 
 ---
 
-## Project Structure
+## Run locally (dashboard)
 
 ```bash
-Drug_Response_ML/
-│
-├── ml-service/
-│   ├── dashboard.py
-│   ├── app.py
-│   ├── requirements.txt
-│   ├── feature_schema.json
-│   ├── label_mapping.json
-│   ├── data/
-│   │   └── sample_patient_data.csv
-│   ├── models/
-│   │   └── drug_response_model.pkl
-│   └── venv/ (local only, not pushed to GitHub)
-│
-└── README.md
-```
-
-How to Run Locally (Step-by-Step):
-```
-Step 1: Clone Repository
 git clone https://github.com/aparajitaks/Drug_Response_ML.git
+cd Drug_Response_ML/ml-service
 
-Step 2: Enter the Project Folder
-cd Drug_Response_ML
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
 
-Step 3: Go to ML Service Folder
-cd ml-service
-
-Step 4: Create Virtual Environment
-python3 -m venv venv
-
-Step 5: Activate Virtual Environment
-
-
-For Mac/Linux:
-
-source venv/bin/activate
-
-
-For Windows (PowerShell):
-
-venv\Scripts\activate 
-
-Step 6: Install Dependencies
 pip install -r requirements.txt
 
-Step 7: Run Streamlit Dashboard
 python -m streamlit run dashboard.py
 ```
 
-Now open in browser:
+Open http://localhost:8501
 
-http://localhost:8501
+Environment overrides (optional): set any of `MODEL_PATH`, `LABEL_PATH`, `SCHEMA_PATH`, `DEMO_CSV_PATH` to absolute paths or paths relative to `ml-service`.
 
-```Demo Dataset
+### One-liner quickstart (dashboard)
 
-A sample CSV is included inside:
-
-ml-service/data/sample_patient_data.csv
+```bash
+git clone https://github.com/aparajitaks/Drug_Response_ML.git && \
+cd Drug_Response_ML/ml-service && \
+python -m venv venv && \
+source venv/bin/activate && \
+pip install -r requirements.txt && \
+python -m streamlit run dashboard.py
 ```
 
-You can also download and use it directly from the dashboard sidebar.
+If you need a different port (e.g., 8765), add `--server.port 8765` to the Streamlit command.
 
 ---
 
-## VS Code Interpreter Setup (Important)
+## Run locally (API)
 
-If VS Code shows errors like:
+```bash
+cd Drug_Response_ML/ml-service
+source venv/bin/activate
+uvicorn app:app --host 0.0.0.0 --port 8000
+```
 
---> Import "streamlit" could not be resolved
+- Health check: `GET /`
+- Prediction: `POST /predict` with JSON body
 
---> Import "pandas" could not be resolved
+```json
+{
+	"drugName": "cialis",
+	"condition": "benign prostatic hyperplasia",
+	"rating": 8,
+	"usefulCount": 12
+}
+```
 
---> Import "fastapi" could not be resolved
+---
 
-It means VS Code is not using the correct virtual environment interpreter.
+## How to demo quickly
 
-Fix Interpreter in VS Code
+1) Run the dashboard (steps above).
+2) In the sidebar, click **Download Sample CSV** or **Use Demo Dataset** to load `demo_sample.csv` automatically.
+3) View preview, run predictions, inspect charts, and download the annotated CSV.
 
-```Open VS Code
+---
 
-Press:
-
-Mac:
-
-Cmd + Shift + P
-
-
-Windows/Linux:
-
-Ctrl + Shift + P
-
-
-Search and click:
-
-Python: Select Interpreter
-
-
-Select the interpreter:
-
-ml-service/venv/bin/python
-
-
-If it is not visible, click:
-
-Enter interpreter path...
-
-
-Then manually choose:
-
-ml-service/venv/bin/python
-
-Reload VS Code (Recommended)
+## Project layout
 
 ```
+Drug_Response_ML/
+└── ml-service/
+		├── app.py                 # FastAPI inference service
+		├── dashboard.py           # Streamlit UI
+		├── feature_schema.json    # Feature ordering/selection
+		├── label_mapping.json     # Class → human label mapping
+		├── requirements.txt       # Python deps
+		├── data/
+		│   └── demo_sample.csv    # Demo dataset (downloadable)
+		└── models/
+				└── drug_response_model.pkl  # Trained classifier
+```
+
+---
+
+## Notes
+
+- Paths use `pathlib` so moving the project folder won't break file resolution; env vars can still point to custom locations.
+- Text reviews are present in the demo CSV but are not consumed by the shipped model.
+- For VS Code, pick the interpreter at `ml-service/venv/bin/python` to avoid missing-import warnings.

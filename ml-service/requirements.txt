@@ -5,3 +5,5 @@ joblib
 pandas
 numpy
 plotly
+streamlit
+python-dotenv

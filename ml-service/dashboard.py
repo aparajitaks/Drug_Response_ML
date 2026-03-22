@@ -1,18 +1,32 @@
-import streamlit as st
-import pandas as pd
-import joblib
 import json
 import os
+from pathlib import Path
+
+import joblib
+import pandas as pd
 import plotly.express as px
+import streamlit as st
+from dotenv import load_dotenv
 
 st.set_page_config(page_title="Drug Response ML Dashboard", layout="wide")
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+load_dotenv()
 
-MODEL_PATH = os.path.join(BASE_DIR, "models", "drug_response_model.pkl")
-LABEL_PATH = os.path.join(BASE_DIR, "label_mapping.json")
-SCHEMA_PATH = os.path.join(BASE_DIR, "feature_schema.json")
-DEMO_CSV_PATH = os.path.join(BASE_DIR, "data", "demo_sample.csv")
+BASE_DIR = Path(__file__).resolve().parent
+
+
+def resolve_path(env_value: str | None, default_relative: str) -> Path:
+    """Return a path that works if env is absolute or relative to BASE_DIR."""
+    if env_value:
+        candidate = Path(env_value)
+        return candidate if candidate.is_absolute() else BASE_DIR / candidate
+    return BASE_DIR / default_relative
+
+
+MODEL_PATH = resolve_path(os.getenv("MODEL_PATH"), "models/drug_response_model.pkl")
+LABEL_PATH = resolve_path(os.getenv("LABEL_PATH"), "label_mapping.json")
+SCHEMA_PATH = resolve_path(os.getenv("SCHEMA_PATH"), "feature_schema.json")
+DEMO_CSV_PATH = resolve_path(os.getenv("DEMO_CSV_PATH"), "data/demo_sample.csv")
 
 @st.cache_resource
 def load_model():
@@ -20,15 +34,15 @@ def load_model():
 
 @st.cache_data
 def load_label_mapping():
-    if os.path.exists(LABEL_PATH):
-        with open(LABEL_PATH, "r") as f:
+    if LABEL_PATH.exists():
+        with LABEL_PATH.open("r") as f:
             return json.load(f)
     return None
 
 @st.cache_data
 def load_schema():
-    if os.path.exists(SCHEMA_PATH):
-        with open(SCHEMA_PATH, "r") as f:
+    if SCHEMA_PATH.exists():
+        with SCHEMA_PATH.open("r") as f:
             return json.load(f)
     return None
 
@@ -45,8 +59,8 @@ st.sidebar.markdown("---")
 
 st.sidebar.markdown("### Demo Dataset Options")
 
-if os.path.exists(DEMO_CSV_PATH):
-    with open(DEMO_CSV_PATH, "rb") as file:
+if DEMO_CSV_PATH.exists():
+    with DEMO_CSV_PATH.open("rb") as file:
         st.sidebar.download_button(
             label="Download Sample CSV",
             data=file,
@@ -57,7 +71,7 @@ else:
     st.sidebar.warning("Demo CSV file not found. Add it in data/sample_patient_data.csv")
 
 if st.sidebar.button("Use Demo Dataset"):
-    if os.path.exists(DEMO_CSV_PATH):
+    if DEMO_CSV_PATH.exists():
         demo_df = pd.read_csv(DEMO_CSV_PATH)
         st.session_state["uploaded_df"] = demo_df
         st.sidebar.success("Demo dataset loaded successfully.")
@@ -140,7 +154,9 @@ try:
         df["Confidence"] = proba.max(axis=1)
 
     if label_mapping:
-        df["Prediction_Label"] = df["Prediction"].astype(str).map(label_mapping)
+        df["Prediction_Label"] = (
+            df["Prediction"].astype(str).map(label_mapping).fillna(df["Prediction"].astype(str))
+        )
 
     st.success("Prediction completed successfully.")
     st.dataframe(df.head(20), use_container_width=True)
