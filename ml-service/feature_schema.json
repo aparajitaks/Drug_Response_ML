@@ -1,3 +1,7 @@
 {
-  "features": ["drugName", "condition", "rating", "usefulCount"]
+  "features": [
+    "review",
+    "condition",
+    "usefulCount"
+  ]
 }
