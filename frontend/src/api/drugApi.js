@@ -9,5 +9,4 @@ export const compareDrugs = (drug1, drug2, condition) =>
 export const predictResponse = (drugName, condition, review, usefulCount) =>
   client.post('/predict', { drugName, condition, review, usefulCount })
 
-export const getAllDrugs = () =>
-  client.get('/drugs')
+export const getAllDrugs = () => client.get('/drugs')

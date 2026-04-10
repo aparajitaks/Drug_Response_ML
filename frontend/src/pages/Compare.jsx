@@ -1,23 +1,18 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { compareDrugs } from '../api/drugApi'
-import ReviewCard from '../components/ReviewCard'
-import SentimentBar from '../components/SentimentBar'
 import Spinner from '../components/Spinner'
+import SentimentBar from '../components/SentimentBar'
+import ReviewCard from '../components/ReviewCard'
 
-function DrugColumn({ title, data }) {
+function CompareColumn({ title, data }) {
   return (
-    <div className="space-y-4 rounded-xl bg-white p-4 shadow-sm">
-      <h3 className="text-xl font-semibold text-gray-900">{title}</h3>
-      <SentimentBar distribution={data?.sentiment_distribution} />
+    <div className="space-y-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+      <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
+      <SentimentBar distribution={data.sentiment_distribution} />
       <div className="space-y-3">
-        {(data?.top_reviews || []).slice(0, 3).map((review, idx) => (
-          <ReviewCard
-            key={idx}
-            review={review.review}
-            usefulCount={review.usefulCount}
-            rating={review.rating}
-          />
+        {data.top_reviews.slice(0, 3).map((review, idx) => (
+          <ReviewCard key={idx} review={review.review} usefulCount={review.usefulCount} rating={review.rating} />
         ))}
       </div>
     </div>
@@ -26,59 +21,60 @@ function DrugColumn({ title, data }) {
 
 export default function Compare() {
   const [params] = useSearchParams()
-  const drug1 = (params.get('drug1') || '').trim()
-  const drug2 = (params.get('drug2') || '').trim()
-  const condition = (params.get('condition') || '').trim()
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  const drug1 = params.get('drug1') || ''
+  const drug2 = params.get('drug2') || ''
+  const condition = params.get('condition') || ''
+
   const [data, setData] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
-    let active = true
-    const run = async () => {
+    if (!drug1 || !drug2 || !condition) return
+    const load = async () => {
       setLoading(true)
       setError('')
-      if (!drug1 || !drug2 || !condition) {
-        setError('Missing compare query parameters. Provide drug1, drug2, and condition.')
-        setLoading(false)
-        return
-      }
       try {
         const response = await compareDrugs(drug1, drug2, condition)
-        if (active) setData(response.data)
+        setData(response.data)
       } catch (err) {
-        if (active) setError(err?.response?.data?.detail || 'Unable to compare drugs.')
+        setError(err?.response?.data?.detail || err.message || 'Compare request failed.')
       } finally {
-        if (active) setLoading(false)
+        setLoading(false)
       }
     }
-    run()
-    return () => {
-      active = false
-    }
+    load()
   }, [drug1, drug2, condition])
 
+  if (loading) return <Spinner label="Comparing drugs..." />
+
   return (
-    <section className="mx-auto max-w-6xl px-4 py-8">
-      {loading && <Spinner label="Comparing drugs..." />}
-      {error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</p>}
-      {!loading && !error && data && (
-        <div className="space-y-6">
-          <div className="grid gap-4 md:grid-cols-2">
-            <DrugColumn title={data.drug1_data.drug} data={data.drug1_data} />
-            <DrugColumn title={data.drug2_data.drug} data={data.drug2_data} />
+    <section className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+      {error ? <p className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
+      {data ? (
+        <>
+          <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
+            Compare: {drug1} vs {drug2}
+          </h1>
+          <p className="mt-1 text-sm text-gray-500">Condition: {condition}</p>
+
+          <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
+            <CompareColumn title={data.drug1_data.drug} data={data.drug1_data} />
+            <CompareColumn title={data.drug2_data.drug} data={data.drug2_data} />
           </div>
-          <div className="rounded-xl border border-indigo-100 bg-indigo-50 p-4 text-sm text-indigo-900">
+
+          <div className="mt-6 rounded-lg border border-indigo-200 bg-indigo-50 p-4 text-sm text-indigo-800">
             {data.simple_insight}
           </div>
+
           <Link
             to="/predict"
-            className="inline-flex rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+            className="mt-6 inline-block rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
           >
             Analyze a specific review
           </Link>
-        </div>
-      )}
+        </>
+      ) : null}
     </section>
   )
 }

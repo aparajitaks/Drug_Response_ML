@@ -1,107 +1,99 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { searchDrug } from '../api/drugApi'
-import ReviewCard from '../components/ReviewCard'
-import SentimentBar from '../components/SentimentBar'
 import Spinner from '../components/Spinner'
+import SentimentBar from '../components/SentimentBar'
+import ReviewCard from '../components/ReviewCard'
 
 export default function SearchResults() {
   const [params] = useSearchParams()
   const navigate = useNavigate()
-  const drug = (params.get('drug') || '').trim()
-  const condition = (params.get('condition') || '').trim()
+  const drug = params.get('drug') || ''
+  const condition = params.get('condition') || ''
 
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
   const [data, setData] = useState(null)
-  const [compareDrug, setCompareDrug] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [compareWith, setCompareWith] = useState('')
   const [showCompareInput, setShowCompareInput] = useState(false)
 
   useEffect(() => {
-    let active = true
-
-    const run = async () => {
+    if (!condition) return
+    const load = async () => {
       setLoading(true)
       setError('')
-      if (!drug || !condition) {
-        setError('Please provide both drug and condition in the search query.')
-        setLoading(false)
-        return
-      }
       try {
         const response = await searchDrug(drug, condition)
-        if (active) setData(response.data)
+        setData(response.data)
       } catch (err) {
-        if (active) setError(err?.response?.data?.detail || 'Unable to fetch search results.')
+        setError(err?.response?.data?.detail || err.message || 'Search request failed.')
       } finally {
-        if (active) setLoading(false)
+        setLoading(false)
       }
     }
-
-    run()
-    return () => {
-      active = false
-    }
+    load()
   }, [drug, condition])
 
   const goCompare = () => {
-    if (!compareDrug.trim()) return
+    if (!compareWith.trim()) return
     navigate(
-      `/compare?drug1=${encodeURIComponent(drug)}&drug2=${encodeURIComponent(compareDrug.trim())}&condition=${encodeURIComponent(condition)}`
+      `/compare?drug1=${encodeURIComponent(drug)}&drug2=${encodeURIComponent(
+        compareWith.trim(),
+      )}&condition=${encodeURIComponent(condition)}`,
     )
   }
 
+  if (loading) return <Spinner label="Searching reviews..." />
+
   return (
-    <section className="mx-auto max-w-5xl px-4 py-8">
-      {loading && <Spinner label="Loading search results..." />}
-      {error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</p>}
-      {!loading && !error && data && (
-        <div className="space-y-6">
-          <div>
-            <h2 className="text-2xl font-semibold text-gray-900">
-              {data.drug} for {data.condition}
-            </h2>
-            <p className="text-sm text-gray-500">{data.total_reviews} total reviews</p>
+    <section className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+      {error ? <p className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
+      {data ? (
+        <>
+          <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
+            {drug || 'All drugs'} for {condition}
+          </h1>
+          <p className="mt-1 text-sm text-gray-500">Total reviews: {data.total_reviews}</p>
+
+          <div className="mt-5">
+            <SentimentBar distribution={data.sentiment_distribution} />
           </div>
-          <SentimentBar distribution={data.sentiment_distribution} />
-          <div className="space-y-3">
+
+          <div className="mt-6 space-y-3">
             {data.top_reviews.map((item, idx) => (
-              <ReviewCard
-                key={idx}
-                review={item.review}
-                usefulCount={item.usefulCount}
-                rating={item.rating}
-              />
+              <ReviewCard key={idx} review={item.review} usefulCount={item.usefulCount} rating={item.rating} />
             ))}
           </div>
-          <div className="rounded-xl bg-white p-4 shadow-sm">
+
+          <div className="mt-8">
             <button
               type="button"
-              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
-              onClick={() => setShowCompareInput((prev) => !prev)}
+              onClick={() => setShowCompareInput((v) => !v)}
+              className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
             >
               Compare with another drug
             </button>
-            {showCompareInput && (
-              <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+            {showCompareInput ? (
+              <div className="mt-3 flex max-w-md gap-2">
                 <input
-                  value={compareDrug}
-                  onChange={(e) => setCompareDrug(e.target.value)}
+                  type="text"
+                  value={compareWith}
+                  onChange={(e) => setCompareWith(e.target.value)}
                   placeholder="Enter second drug"
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500"
+                  className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm outline-none ring-indigo-500 focus:ring"
                 />
                 <button
                   type="button"
                   onClick={goCompare}
-                  className="rounded-lg border border-indigo-600 px-4 py-2 text-sm font-medium text-indigo-600 hover:bg-indigo-50"
+                  className="rounded-md border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-100"
                 >
-                  Compare
+                  Go
                 </button>
               </div>
-            )}
+            ) : null}
           </div>
-        </div>
-      )}
+        </>
+      ) : null}
     </section>
   )
 }
