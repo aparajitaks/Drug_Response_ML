@@ -13,9 +13,12 @@ def compare(
     condition: str = Query(..., min_length=1),
 ) -> dict:
     condition_value = condition.strip()
-    df = _load_reviews()
-    drug1_data = _build_search_payload(df, drug1.strip(), condition_value)
-    drug2_data = _build_search_payload(df, drug2.strip(), condition_value)
+    drug1_value = drug1.strip()
+    drug2_value = drug2.strip()
+    drug1_df = _load_reviews(drug1_value, condition_value)
+    drug2_df = _load_reviews(drug2_value, condition_value)
+    drug1_data = _build_search_payload(drug1_df, drug1_value, condition_value)
+    drug2_data = _build_search_payload(drug2_df, drug2_value, condition_value)
 
     drug1_name = drug1_data["drug"]
     drug2_name = drug2_data["drug"]

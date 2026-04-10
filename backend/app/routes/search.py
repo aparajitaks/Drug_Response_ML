@@ -1,14 +1,14 @@
 import pandas as pd
 from fastapi import APIRouter, HTTPException, Query
 
-from app.services.supabase_service import load_reviews
+from app.services.supabase_service import get_drug_reviews
 
 
 router = APIRouter()
 
 
-def _load_reviews() -> pd.DataFrame:
-    return load_reviews()
+def _load_reviews(drug: str, condition: str) -> pd.DataFrame:
+    return get_drug_reviews(drug, condition)
 
 
 def _build_search_payload(df: pd.DataFrame, drug: str, condition: str) -> dict:
@@ -56,5 +56,7 @@ def search(
     drug: str = Query(..., min_length=1),
     condition: str = Query(..., min_length=1),
 ) -> dict:
-    df = _load_reviews()
-    return _build_search_payload(df, drug.strip(), condition.strip())
+    drug_value = drug.strip()
+    condition_value = condition.strip()
+    df = _load_reviews(drug_value, condition_value)
+    return _build_search_payload(df, drug_value, condition_value)

@@ -1,19 +1,20 @@
-create table if not exists public.drug_reviews (
-    id bigserial primary key,
-    drugName text not null,
-    condition text not null,
-    review text not null,
-    usefulCount integer not null default 0,
-    rating numeric,
-    response_category integer,
-    created_at timestamptz not null default now()
+-- Run this in Supabase SQL editor to create the table
+CREATE TABLE IF NOT EXISTS drug_reviews (
+  id SERIAL PRIMARY KEY,
+  "uniqueID" INTEGER,
+  "drugName" TEXT NOT NULL,
+  "condition" TEXT,
+  review TEXT,
+  rating FLOAT,
+  date TEXT,
+  "usefulCount" INTEGER DEFAULT 0,
+  response_category INTEGER
 );
 
-create index if not exists idx_drug_reviews_drug_name
-    on public.drug_reviews (drugName);
+-- Index for fast drug+condition lookups
+CREATE INDEX IF NOT EXISTS idx_drug_condition
+ON drug_reviews ("drugName", "condition");
 
-create index if not exists idx_drug_reviews_condition
-    on public.drug_reviews (condition);
-
-create index if not exists idx_drug_reviews_response_category
-    on public.drug_reviews (response_category);
+-- Index for drug name search
+CREATE INDEX IF NOT EXISTS idx_drug_name
+ON drug_reviews ("drugName");
