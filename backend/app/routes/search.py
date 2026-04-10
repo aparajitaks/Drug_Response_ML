@@ -1,23 +1,14 @@
-import math
-from pathlib import Path
-
 import pandas as pd
 from fastapi import APIRouter, Query
+
+from app.services.supabase_service import load_reviews
 
 
 router = APIRouter()
 
 
 def _load_reviews() -> pd.DataFrame:
-    data_path = Path(__file__).resolve().parents[3] / "ml-service" / "data" / "drug_reviews.csv"
-    df = pd.read_csv(data_path)
-    df["drugName"] = df["drugName"].fillna("").astype(str)
-    df["condition"] = df["condition"].fillna("").astype(str)
-    df["review"] = df["review"].fillna("").astype(str)
-    df["usefulCount"] = pd.to_numeric(df["usefulCount"], errors="coerce").fillna(0).astype(int)
-    df["rating"] = pd.to_numeric(df["rating"], errors="coerce")
-    df["response_category"] = pd.to_numeric(df["response_category"], errors="coerce")
-    return df
+    return load_reviews()
 
 
 def _build_search_payload(df: pd.DataFrame, drug: str, condition: str) -> dict:
