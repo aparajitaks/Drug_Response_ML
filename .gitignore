@@ -9,12 +9,21 @@ __pycache__/
 venv/
 ml-service/venv/
 .env
+.venv/
+*.env
 
 # Jupyter
 .ipynb_checkpoints/
 
 # Node
 node_modules/
+frontend/dist/
 
 data/*.csv
 !data/demo_sample.csv
+
+# Model files (large binary)
+ml-service/models/*.pkl
+
+# Data (large CSV files)
+ml-service/data/drug_reviews.csv
