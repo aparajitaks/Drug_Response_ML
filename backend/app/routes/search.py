@@ -1,5 +1,5 @@
 import pandas as pd
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, HTTPException, Query
 
 from app.services.supabase_service import load_reviews
 
@@ -18,13 +18,7 @@ def _build_search_payload(df: pd.DataFrame, drug: str, condition: str) -> dict:
 
     total_reviews = int(len(filtered))
     if total_reviews == 0:
-        return {
-            "drug": drug,
-            "condition": condition,
-            "total_reviews": 0,
-            "sentiment_distribution": {"positive": 0, "neutral": 0, "negative": 0},
-            "top_reviews": [],
-        }
+        raise HTTPException(status_code=404, detail="No reviews found for this drug/condition")
 
     positive = int((filtered["response_category"] == 1).sum())
     negative = int((filtered["response_category"] == 0).sum())
@@ -44,7 +38,7 @@ def _build_search_payload(df: pd.DataFrame, drug: str, condition: str) -> dict:
 
     top = (
         filtered.sort_values("usefulCount", ascending=False)
-        .head(10)[["review", "usefulCount"]]
+        .head(10)[["review", "usefulCount", "rating"]]
         .to_dict(orient="records")
     )
 

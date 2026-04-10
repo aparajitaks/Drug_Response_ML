@@ -6,11 +6,6 @@ from app.routes.search import _build_search_payload, _load_reviews
 router = APIRouter()
 
 
-def _effectiveness_score(payload: dict) -> int:
-    dist = payload.get("sentiment_distribution", {})
-    return int(dist.get("positive", 0)) - int(dist.get("negative", 0))
-
-
 @router.get("")
 def compare(
     drug1: str = Query(..., min_length=1),
@@ -22,15 +17,42 @@ def compare(
     drug1_data = _build_search_payload(df, drug1.strip(), condition_value)
     drug2_data = _build_search_payload(df, drug2.strip(), condition_value)
 
-    score1 = _effectiveness_score(drug1_data)
-    score2 = _effectiveness_score(drug2_data)
+    drug1_name = drug1_data["drug"]
+    drug2_name = drug2_data["drug"]
+    positive_1 = int(drug1_data["sentiment_distribution"].get("positive", 0))
+    positive_2 = int(drug2_data["sentiment_distribution"].get("positive", 0))
+    negative_1 = int(drug1_data["sentiment_distribution"].get("negative", 0))
+    negative_2 = int(drug2_data["sentiment_distribution"].get("negative", 0))
 
-    if score1 > score2:
-        simple_insight = "Drug1 has higher effectiveness score. Drug2 has fewer reported negative responses."
-    elif score2 > score1:
-        simple_insight = "Drug2 has higher effectiveness score. Drug1 has fewer reported negative responses."
+    if positive_1 > positive_2:
+        lower_negative_name = drug1_name if negative_1 < negative_2 else drug2_name
+        simple_insight = (
+            f"{drug1_name.title()} has a higher positive response rate ({positive_1}%) "
+            f"compared to {drug2_name.title()} ({positive_2}%). "
+            f"{lower_negative_name.title()} shows fewer negative responses."
+        )
+    elif positive_2 > positive_1:
+        lower_negative_name = drug2_name if negative_2 < negative_1 else drug1_name
+        simple_insight = (
+            f"{drug2_name.title()} has a higher positive response rate ({positive_2}%) "
+            f"compared to {drug1_name.title()} ({positive_1}%). "
+            f"{lower_negative_name.title()} shows fewer negative responses."
+        )
     else:
-        simple_insight = "Both drugs show similar effectiveness for the selected condition."
+        if negative_1 < negative_2:
+            lower_negative_name = drug1_name
+        elif negative_2 < negative_1:
+            lower_negative_name = drug2_name
+        else:
+            lower_negative_name = ""
+        simple_insight = (
+            f"{drug1_name.title()} and {drug2_name.title()} have similar positive response rates ({positive_1}%). "
+            + (
+                f"{lower_negative_name.title()} shows fewer negative responses."
+                if lower_negative_name
+                else "Both show similar negative response rates."
+            )
+        )
 
     return {
         "drug1_data": drug1_data,
