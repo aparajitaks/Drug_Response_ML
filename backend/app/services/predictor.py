@@ -38,14 +38,14 @@ def _impact_level(value: float, max_abs: float) -> str:
 
 
 def _extract_class_shap_values(raw_shap_values: Any, prediction_class: int) -> np.ndarray:
-    if isinstance(raw_shap_values, list):
+    # Preferred indexing flow for multiclass TreeExplainer outputs.
+    if isinstance(raw_shap_values, list) and len(raw_shap_values) > prediction_class:
         return np.asarray(raw_shap_values[prediction_class][0], dtype=float)
 
+    # Compatibility fallback for alternate SHAP return formats.
     shap_array = np.asarray(raw_shap_values)
-    if shap_array.ndim == 3:
-        # Typical shape from modern SHAP for multiclass trees: (n_samples, n_features, n_classes)
-        if shap_array.shape[2] > prediction_class:
-            return shap_array[0, :, prediction_class].astype(float)
+    if shap_array.ndim == 3 and shap_array.shape[2] > prediction_class:
+        return shap_array[0, :, prediction_class].astype(float)
     if shap_array.ndim == 2:
         return shap_array[0].astype(float)
     return np.asarray([], dtype=float)
@@ -61,14 +61,21 @@ def _compute_shap_explanation(model: Any, input_df: pd.DataFrame, prediction_cla
     try:
         preprocessor = model.named_steps["preprocessor"]
         classifier = model.named_steps["classifier"]
+
+        # SHAP must run on transformed feature space, not directly on full pipeline.
         transformed = preprocessor.transform(input_df)
         if "to_dense" in model.named_steps:
             transformed = model.named_steps["to_dense"].transform(transformed)
+        if hasattr(transformed, "toarray"):
+            transformed = transformed.toarray()
 
         explainer = shap.TreeExplainer(classifier)
         raw_shap_values = explainer.shap_values(transformed, check_additivity=False)
         shap_values = _extract_class_shap_values(raw_shap_values, prediction_class)
-        feature_names = preprocessor.get_feature_names_out()
+
+        tfidf = preprocessor.named_transformers_["review_tfidf"]
+        tfidf_features = tfidf.get_feature_names_out().tolist()
+        all_features = tfidf_features + ["condition_encoded", "usefulCount"]
 
         if shap_values.size == 0:
             return []
@@ -80,7 +87,7 @@ def _compute_shap_explanation(model: Any, input_df: pd.DataFrame, prediction_cla
             value = float(shap_values[idx])
             explanations.append(
                 {
-                    "feature": str(feature_names[idx]),
+                    "feature": all_features[idx] if idx < len(all_features) else f"feature_{idx}",
                     "direction": "positive" if value >= 0 else "negative",
                     "impact": _impact_level(value, max_abs),
                 }
